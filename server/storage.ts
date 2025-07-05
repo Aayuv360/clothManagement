@@ -447,4 +447,8 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export let storage: IStorage = new MemStorage();
+
+export function setStorage(newStorage: IStorage) {
+  storage = newStorage;
+}

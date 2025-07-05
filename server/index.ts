@@ -2,6 +2,8 @@ import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { MongoStorage } from "./mongodb";
+import { setStorage } from "./storage";
 
 const app = express();
 app.use(express.json());
@@ -50,6 +52,21 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Initialize MongoDB storage
+  const mongoUri = process.env.MONGODB_URI || "mongodb://localhost:27017/sareeflow";
+  console.log('MongoDB URI:', mongoUri);
+  
+  try {
+    const mongoStorage = new MongoStorage(mongoUri);
+    await mongoStorage.connect();
+    setStorage(mongoStorage);
+    console.log('Successfully connected to MongoDB');
+  } catch (error) {
+    console.error('Failed to connect to MongoDB:', error);
+    console.log('Falling back to in-memory storage');
+    // Keep the default in-memory storage
+  }
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
