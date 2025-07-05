@@ -24,7 +24,7 @@ export const products = pgTable("products", {
   costPrice: decimal("cost_price", { precision: 10, scale: 2 }),
   stockQuantity: integer("stock_quantity").notNull().default(0),
   minStockLevel: integer("min_stock_level").notNull().default(5),
-  images: text("images").array(),
+  images: text("images", { mode: 'json' }).$type<string[]>(),
   fabric: text("fabric"),
   colors: text("colors").array(),
   sizes: text("sizes").array(),

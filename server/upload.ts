@@ -70,15 +70,16 @@ export const saveLocalFile = async (file: Express.Multer.File): Promise<string> 
   return publicPath;
 };
 
+// Convert file to base64 for database storage
+export const convertToBase64 = (file: Express.Multer.File): string => {
+  const base64String = file.buffer.toString('base64');
+  return `data:${file.mimetype};base64,${base64String}`;
+};
+
 export const uploadImage = async (file: Express.Multer.File): Promise<string> => {
   try {
-    // Try Cloudinary first if configured
-    if (process.env.CLOUDINARY_CLOUD_NAME) {
-      return await uploadToCloudinary(file);
-    } else {
-      // Fallback to local storage for development
-      return await saveLocalFile(file);
-    }
+    // Store as base64 in database instead of external storage
+    return convertToBase64(file);
   } catch (error) {
     console.error('Upload error:', error);
     throw new Error('File upload failed');
@@ -87,6 +88,5 @@ export const uploadImage = async (file: Express.Multer.File): Promise<string> =>
 
 // Multiple file upload helper
 export const uploadMultipleImages = async (files: Express.Multer.File[]): Promise<string[]> => {
-  const uploadPromises = files.map(file => uploadImage(file));
-  return Promise.all(uploadPromises);
+  return files.map(file => convertToBase64(file));
 };
