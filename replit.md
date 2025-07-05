@@ -24,11 +24,12 @@ SareeFlow is a comprehensive order management and inventory system tailored for 
 - **File Structure**: Monorepo structure with shared schemas
 
 ### Database Architecture
-- **Database**: PostgreSQL with Neon serverless driver
-- **Schema Management**: Drizzle Kit for migrations and schema management
-- **Tables**: Users, Products, Customers, Orders, Suppliers, Inventory Movements, Purchase Orders
-- **Relations**: Proper foreign key relationships between entities
+- **Database**: MongoDB Atlas cloud database (successfully connected)
+- **Storage**: MongoDB collections with document-based storage
+- **Collections**: Users, Products, Customers, Orders, Suppliers, Inventory Movements, Purchase Orders
+- **Relationships**: Referenced relationships between documents using IDs
 - **Indexing**: Optimized for saree business queries (SKU, customer phone, order numbers)
+- **Connection**: Secure connection via MongoDB Atlas with IP whitelist (0.0.0.0/0)
 
 ## Key Components
 
@@ -147,3 +148,6 @@ Recent Changes:
 - July 05, 2025: Added login/registration pages with role selection
 - July 05, 2025: Created AuthContext for frontend state management
 - July 05, 2025: Updated sidebar with user profile and logout functionality
+- July 05, 2025: Successfully connected MongoDB Atlas cloud database with persistent data storage
+- July 05, 2025: Completed customer edit/delete functionality with modal dialogs
+- July 05, 2025: Implemented product edit/delete functionality with confirmation prompts
