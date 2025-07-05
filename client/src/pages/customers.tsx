@@ -7,10 +7,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import AddCustomerModal from "@/components/add-customer-modal";
+import EditCustomerModal from "@/components/edit-customer-modal";
+import DeleteCustomerDialog from "@/components/delete-customer-dialog";
 import { Customer } from "@shared/schema";
 
 export default function Customers() {
   const [showAddCustomerModal, setShowAddCustomerModal] = useState(false);
+  const [showEditCustomerModal, setShowEditCustomerModal] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   const { data: customers, isLoading } = useQuery<Customer[]>({
@@ -46,6 +51,26 @@ export default function Customers() {
       'bg-orange-100 text-orange-600'
     ];
     return colors[name.length % colors.length];
+  };
+
+  const handleEditCustomer = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setShowEditCustomerModal(true);
+  };
+
+  const handleDeleteCustomer = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setShowDeleteDialog(true);
+  };
+
+  const closeEditModal = () => {
+    setShowEditCustomerModal(false);
+    setSelectedCustomer(null);
+  };
+
+  const closeDeleteDialog = () => {
+    setShowDeleteDialog(false);
+    setSelectedCustomer(null);
   };
 
   const getCustomerTier = (totalSpent: string) => {
@@ -202,10 +227,21 @@ export default function Customers() {
                         </div>
                       </div>
                       <div className="flex gap-1">
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleEditCustomer(customer)}
+                          title="Edit customer"
+                        >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleDeleteCustomer(customer)}
+                          title="Delete customer"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -282,6 +318,22 @@ export default function Customers() {
         open={showAddCustomerModal} 
         onClose={() => setShowAddCustomerModal(false)} 
       />
+      
+      {selectedCustomer && (
+        <EditCustomerModal 
+          open={showEditCustomerModal} 
+          onClose={closeEditModal}
+          customer={selectedCustomer}
+        />
+      )}
+      
+      {selectedCustomer && (
+        <DeleteCustomerDialog 
+          open={showDeleteDialog} 
+          onClose={closeDeleteDialog}
+          customer={selectedCustomer}
+        />
+      )}
     </>
   );
 }
