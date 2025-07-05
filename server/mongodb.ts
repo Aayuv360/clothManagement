@@ -25,6 +25,9 @@ export class MongoStorage implements IStorage {
     this.client = new MongoClient(uri, {
       serverSelectionTimeoutMS: 5000,
       connectTimeoutMS: 10000,
+      tls: true,
+      tlsInsecure: false,
+      family: 4 // Force IPv4
     });
   }
 

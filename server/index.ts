@@ -3,7 +3,10 @@ import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { MongoStorage } from "./mongodb";
+import { drizzle } from "drizzle-orm/neon-http";
+import { neon } from "@neondatabase/serverless";
+import { users } from "../shared/schema";
+import { eq } from "drizzle-orm";
 import { setStorage } from "./storage";
 
 const app = express();
@@ -53,19 +56,29 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Initialize MongoDB storage
-  const mongoUri = process.env.MONGODB_URI || "mongodb://localhost:27017/sareeflow";
-  console.log('MongoDB URI:', mongoUri);
-  
+  // Initialize PostgreSQL storage with Drizzle
   try {
-    const mongoStorage = new MongoStorage(mongoUri);
-    await mongoStorage.connect();
-    setStorage(mongoStorage);
-    console.log('Successfully connected to MongoDB');
+    const databaseUrl = process.env.DATABASE_URL;
+    if (databaseUrl) {
+      console.log('Connecting to PostgreSQL database...');
+      const sql = neon(databaseUrl);
+      const db = drizzle(sql);
+      
+      // Test the connection by trying to select from users table
+      try {
+        await db.select().from(users).limit(1);
+        console.log('Successfully connected to PostgreSQL database');
+        // Note: For now we'll use in-memory storage but the DB connection is working
+        // TODO: Implement DrizzleStorage class
+      } catch (dbError) {
+        console.log('Database tables not yet created, using in-memory storage');
+      }
+    } else {
+      console.log('No DATABASE_URL found, using in-memory storage');
+    }
   } catch (error) {
-    console.error('Failed to connect to MongoDB:', error);
-    console.log('Falling back to in-memory storage');
-    // Keep the default in-memory storage
+    console.error('Database connection error:', error);
+    console.log('Using in-memory storage');
   }
   
   const server = await registerRoutes(app);
