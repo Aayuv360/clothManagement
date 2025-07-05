@@ -52,7 +52,7 @@ function AppContent() {
   }
 
   if (!user) {
-    return <Login onLogin={() => {}} />;
+    return <Login />;
   }
 
   return <MainRouter />;

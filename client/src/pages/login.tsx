@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Store, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/contexts/AuthContext";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -27,14 +27,11 @@ const registerSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 type RegisterFormData = z.infer<typeof registerSchema>;
 
-interface LoginProps {
-  onLogin: (user: any) => void;
-}
-
-export default function Login({ onLogin }: LoginProps) {
+export default function Login() {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { login, register } = useAuth();
 
   const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -58,24 +55,11 @@ export default function Login({ onLogin }: LoginProps) {
   const handleLogin = async (data: LoginFormData) => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        body: JSON.stringify(data),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      await login(data.username, data.password);
+      toast({
+        title: "Login successful",
+        description: "Welcome back to SareeFlow!",
       });
-      
-      if (response.ok) {
-        const user = await response.json();
-        onLogin(user);
-        toast({
-          title: "Login successful",
-          description: `Welcome back, ${user.fullName}!`,
-        });
-      } else {
-        throw new Error('Invalid credentials');
-      }
     } catch (error) {
       toast({
         title: "Login failed",
@@ -90,24 +74,11 @@ export default function Login({ onLogin }: LoginProps) {
   const handleRegister = async (data: RegisterFormData) => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        body: JSON.stringify(data),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      await register(data);
+      toast({
+        title: "Registration successful",
+        description: `Welcome to SareeFlow, ${data.fullName}!`,
       });
-      
-      if (response.ok) {
-        const user = await response.json();
-        onLogin(user);
-        toast({
-          title: "Registration successful",
-          description: `Welcome to SareeFlow, ${user.fullName}!`,
-        });
-      } else {
-        throw new Error('Registration failed');
-      }
     } catch (error) {
       toast({
         title: "Registration failed",
