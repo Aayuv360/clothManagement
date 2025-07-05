@@ -3,14 +3,102 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { 
   insertProductSchema, insertCustomerSchema, insertSupplierSchema, insertOrderSchema,
-  insertOrderItemSchema, insertInventoryMovementSchema, insertPurchaseOrderSchema
+  insertOrderItemSchema, insertInventoryMovementSchema, insertPurchaseOrderSchema,
+  insertUserSchema
 } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
-  // Dashboard routes
-  app.get("/api/dashboard/stats", async (req, res) => {
+  // Authentication routes
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      
+      if (!username || !password) {
+        return res.status(400).json({ error: "Username and password are required" });
+      }
+      
+      const user = await storage.getUserByUsername(username);
+      if (!user || user.password !== password) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+      
+      // Store user in session
+      req.session.user = user;
+      
+      // Don't send password in response
+      const { password: _, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      res.status(500).json({ error: "Login failed" });
+    }
+  });
+
+  app.post("/api/auth/register", async (req, res) => {
+    try {
+      const userData = insertUserSchema.parse(req.body);
+      
+      // Check if username already exists
+      const existingUser = await storage.getUserByUsername(userData.username);
+      if (existingUser) {
+        return res.status(400).json({ error: "Username already exists" });
+      }
+      
+      const user = await storage.createUser(userData);
+      
+      // Store user in session
+      req.session.user = user;
+      
+      // Don't send password in response
+      const { password: _, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid user data", details: error.errors });
+      }
+      res.status(500).json({ error: "Registration failed" });
+    }
+  });
+
+  app.post("/api/auth/logout", async (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ error: "Logout failed" });
+      }
+      res.json({ message: "Logged out successfully" });
+    });
+  });
+
+  app.get("/api/auth/me", async (req, res) => {
+    if (!req.session.user) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    const { password: _, ...userWithoutPassword } = req.session.user;
+    res.json(userWithoutPassword);
+  });
+
+  // Middleware to check authentication
+  const requireAuth = (req: any, res: any, next: any) => {
+    if (!req.session.user) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+    next();
+  };
+
+  // Middleware to check role permissions
+  const requireRole = (roles: string[]) => {
+    return (req: any, res: any, next: any) => {
+      if (!req.session.user || !roles.includes(req.session.user.role)) {
+        return res.status(403).json({ error: "Insufficient permissions" });
+      }
+      next();
+    };
+  };
+  
+  // Dashboard routes (require authentication)
+  app.get("/api/dashboard/stats", requireAuth, async (req, res) => {
     try {
       const stats = await storage.getDashboardStats();
       res.json(stats);

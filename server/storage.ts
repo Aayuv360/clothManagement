@@ -85,13 +85,29 @@ export class MemStorage implements IStorage {
   private currentPurchaseOrderItemId = 1;
 
   constructor() {
-    // Initialize with demo admin user
+    // Initialize with demo users for all roles
     this.createUser({
       username: "admin",
       password: "admin123",
       email: "admin@sareeflow.com",
       fullName: "Admin User",
       role: "admin"
+    });
+    
+    this.createUser({
+      username: "staff",
+      password: "staff123",
+      email: "staff@sareeflow.com",
+      fullName: "Sales Staff",
+      role: "staff"
+    });
+    
+    this.createUser({
+      username: "warehouse",
+      password: "warehouse123",
+      email: "warehouse@sareeflow.com",
+      fullName: "Warehouse Manager",
+      role: "warehouse"
     });
   }
 
@@ -108,6 +124,7 @@ export class MemStorage implements IStorage {
     const user: User = {
       ...insertUser,
       id: this.currentUserId++,
+      role: insertUser.role || 'staff',
       createdAt: new Date(),
     };
     this.users.set(user.id, user);

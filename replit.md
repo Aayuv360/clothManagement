@@ -121,7 +121,29 @@ SareeFlow is a comprehensive order management and inventory system tailored for 
 
 Preferred communication style: Simple, everyday language.
 
+## Authentication System
+
+### Role-Based Access Control
+- **Admin**: Full system access to all features and user management
+- **Sales Staff**: Access to orders, customers, products, and billing
+- **Warehouse**: Access to inventory, products, and purchase orders
+
+### Demo Credentials
+- **Admin**: username `admin`, password `admin123`
+- **Sales Staff**: username `staff`, password `staff123`  
+- **Warehouse**: username `warehouse`, password `warehouse123`
+
+### Security Features
+- Session-based authentication with Express sessions
+- Role-based route protection on backend
+- Secure password handling (production should use bcrypt)
+- Automatic session expiry (24 hours)
+
 ## Changelog
 
-Changelog:
-- July 05, 2025. Initial setup
+Recent Changes:
+- July 05, 2025: Initial project setup with MERN stack architecture
+- July 05, 2025: Implemented role-based authentication system with three staff roles
+- July 05, 2025: Added login/registration pages with role selection
+- July 05, 2025: Created AuthContext for frontend state management
+- July 05, 2025: Updated sidebar with user profile and logout functionality
