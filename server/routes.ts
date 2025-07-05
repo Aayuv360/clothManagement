@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { upload, uploadImage, uploadMultipleImages } from "./upload";
 import { 
   insertProductSchema, insertCustomerSchema, insertSupplierSchema, insertOrderSchema,
   insertOrderItemSchema, insertInventoryMovementSchema, insertPurchaseOrderSchema,
@@ -9,6 +10,33 @@ import {
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  
+  // File upload routes
+  app.post("/api/upload/single", upload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+      
+      const imageUrl = await uploadImage(req.file);
+      res.json({ url: imageUrl });
+    } catch (error) {
+      res.status(500).json({ error: "File upload failed" });
+    }
+  });
+
+  app.post("/api/upload/multiple", upload.array('files', 5), async (req, res) => {
+    try {
+      if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
+        return res.status(400).json({ error: "No files uploaded" });
+      }
+      
+      const imageUrls = await uploadMultipleImages(req.files);
+      res.json({ urls: imageUrls });
+    } catch (error) {
+      res.status(500).json({ error: "File upload failed" });
+    }
+  });
   
   // Authentication routes
   app.post("/api/auth/login", async (req, res) => {

@@ -14,6 +14,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ImageUpload } from "@/components/ui/image-upload";
 
 const productFormSchema = insertProductSchema.extend({
   price: z.string().min(1, "Price is required"),
@@ -93,27 +94,8 @@ export default function AddProductModal({ open, onClose }: AddProductModalProps)
     createProductMutation.mutate(data);
   };
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (files) {
-      const newImages: string[] = [];
-      Array.from(files).forEach(file => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          if (e.target?.result) {
-            newImages.push(e.target.result as string);
-            if (newImages.length === files.length) {
-              setImages(prev => [...prev, ...newImages]);
-            }
-          }
-        };
-        reader.readAsDataURL(file);
-      });
-    }
-  };
-
-  const removeImage = (index: number) => {
-    setImages(prev => prev.filter((_, i) => i !== index));
+  const handleImageUpload = (urls: string[]) => {
+    setImages(urls);
   };
 
   return (
@@ -269,51 +251,12 @@ export default function AddProductModal({ open, onClose }: AddProductModalProps)
               )}
             />
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Product Images</label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary transition-colors">
-                <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                <p className="text-sm text-gray-500">Drop images here or click to upload</p>
-                <p className="text-xs text-gray-400 mt-1">PNG, JPG up to 5MB each</p>
-                <input 
-                  type="file" 
-                  multiple 
-                  accept="image/*" 
-                  onChange={handleImageUpload}
-                  className="hidden"
-                  id="image-upload"
-                />
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  className="mt-4"
-                  onClick={() => document.getElementById('image-upload')?.click()}
-                >
-                  Choose Files
-                </Button>
-              </div>
-              
-              {images.length > 0 && (
-                <div className="mt-4 grid grid-cols-3 gap-4">
-                  {images.map((image, index) => (
-                    <div key={index} className="relative">
-                      <img 
-                        src={image} 
-                        alt={`Product ${index + 1}`}
-                        className="w-full h-20 object-cover rounded-lg"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeImage(index)}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <ImageUpload 
+              onUpload={handleImageUpload}
+              existing={images}
+              maxFiles={5}
+              className="space-y-2"
+            />
             
             <div className="flex justify-end space-x-4 pt-4">
               <Button type="button" variant="outline" onClick={onClose}>
