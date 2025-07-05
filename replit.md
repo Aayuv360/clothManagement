@@ -1,0 +1,127 @@
+# SareeFlow - Order Management and Inventory System
+
+## Overview
+
+SareeFlow is a comprehensive order management and inventory system tailored for a saree business. The application provides features for managing products, customers, orders, suppliers, billing, and inventory with real-time tracking and reporting capabilities. It's built as a modern web application with a React frontend and Express backend, using PostgreSQL for data persistence.
+
+## System Architecture
+
+### Frontend Architecture
+- **Framework**: React 18 with TypeScript
+- **Routing**: Wouter for client-side routing
+- **State Management**: TanStack Query (React Query) for server state
+- **UI Components**: Radix UI components with shadcn/ui styling
+- **Styling**: Tailwind CSS with custom design tokens for saree business theme
+- **Form Handling**: React Hook Form with Zod validation
+- **Build Tool**: Vite for development and building
+
+### Backend Architecture
+- **Runtime**: Node.js with Express.js
+- **Language**: TypeScript with ESM modules
+- **Database ORM**: Drizzle ORM for type-safe database operations
+- **API Design**: RESTful API with centralized error handling
+- **Session Management**: Express sessions with PostgreSQL storage
+- **File Structure**: Monorepo structure with shared schemas
+
+### Database Architecture
+- **Database**: PostgreSQL with Neon serverless driver
+- **Schema Management**: Drizzle Kit for migrations and schema management
+- **Tables**: Users, Products, Customers, Orders, Suppliers, Inventory Movements, Purchase Orders
+- **Relations**: Proper foreign key relationships between entities
+- **Indexing**: Optimized for saree business queries (SKU, customer phone, order numbers)
+
+## Key Components
+
+### Product Management
+- Product catalog with SKU, pricing, and stock tracking
+- Image upload support for saree photos
+- Category and fabric type classification
+- Color and size variant management
+- Minimum stock level alerts
+
+### Order Management
+- Complete order lifecycle (pending → confirmed → shipped → delivered)
+- Customer order history and tracking
+- Order item management with quantity and pricing
+- Payment status tracking (paid, partial, COD, pending)
+- Automated inventory updates on order completion
+
+### Inventory Management
+- Real-time stock tracking with movement history
+- Stock adjustment capabilities
+- Low stock alerts and critical stock warnings
+- Supplier-based inventory management
+- Purchase order generation and tracking
+
+### Customer Management
+- Customer database with contact information
+- Order history and spending analytics
+- Customer preferences and notes
+- GST number management for business customers
+
+### Supplier Management
+- Supplier contact and business details
+- Purchase order management
+- Payment terms and bank details
+- Supplier performance tracking
+
+## Data Flow
+
+1. **Product Creation**: Products are added with details → Stock levels initialized → Inventory movements tracked
+2. **Order Processing**: Customer places order → Inventory checked → Order confirmed → Stock reduced → Billing generated
+3. **Inventory Updates**: Purchase orders received → Stock levels updated → Movement history logged
+4. **Reporting**: Data aggregated from all modules → Dashboard metrics updated → Reports generated
+
+## External Dependencies
+
+### Core Dependencies
+- **@neondatabase/serverless**: PostgreSQL database connection
+- **drizzle-orm**: Database ORM and query builder
+- **express**: Web server framework
+- **react**: Frontend framework
+- **@tanstack/react-query**: Server state management
+- **react-hook-form**: Form handling
+- **zod**: Schema validation
+- **tailwindcss**: Styling framework
+
+### UI Dependencies
+- **@radix-ui/***: Accessible UI components
+- **lucide-react**: Icon library
+- **date-fns**: Date manipulation
+- **class-variance-authority**: Component variant management
+
+### Development Dependencies
+- **vite**: Build tool and dev server
+- **typescript**: Type checking
+- **tsx**: TypeScript execution
+- **esbuild**: Production bundling
+
+## Deployment Strategy
+
+### Development
+- **Server**: Node.js with tsx for TypeScript execution
+- **Client**: Vite dev server with HMR
+- **Database**: Neon PostgreSQL with development database
+- **Environment**: Environment variables for database connection
+
+### Production
+- **Build Process**: 
+  - Frontend: Vite build to static assets
+  - Backend: esbuild bundle for Node.js deployment
+- **Database**: Neon PostgreSQL production instance
+- **Deployment**: Single Node.js process serving API and static files
+- **Environment**: Production environment variables required
+
+### Database Management
+- **Migrations**: Drizzle Kit for schema migrations
+- **Seeding**: Manual data seeding for initial setup
+- **Backup**: Database backup strategy through Neon platform
+
+## User Preferences
+
+Preferred communication style: Simple, everyday language.
+
+## Changelog
+
+Changelog:
+- July 05, 2025. Initial setup
