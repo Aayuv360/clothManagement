@@ -7,10 +7,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import AddProductModal from "@/components/add-product-modal";
+import EditProductModal from "@/components/edit-product-modal";
+import DeleteProductDialog from "@/components/delete-product-dialog";
 import { Product } from "@shared/schema";
 
 export default function Products() {
   const [showAddProductModal, setShowAddProductModal] = useState(false);
+  const [showEditProductModal, setShowEditProductModal] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   const { data: products, isLoading } = useQuery<Product[]>({
@@ -36,6 +41,26 @@ export default function Products() {
     if (current <= 2) return { label: 'Critical', class: 'bg-red-100 text-red-800' };
     if (current <= min) return { label: 'Low', class: 'bg-yellow-100 text-yellow-800' };
     return { label: 'Good', class: 'bg-green-100 text-green-800' };
+  };
+
+  const handleEditProduct = (product: Product) => {
+    setSelectedProduct(product);
+    setShowEditProductModal(true);
+  };
+
+  const handleDeleteProduct = (product: Product) => {
+    setSelectedProduct(product);
+    setShowDeleteDialog(true);
+  };
+
+  const closeEditModal = () => {
+    setShowEditProductModal(false);
+    setSelectedProduct(null);
+  };
+
+  const closeDeleteDialog = () => {
+    setShowDeleteDialog(false);
+    setSelectedProduct(null);
   };
 
   if (isLoading) {
@@ -130,10 +155,21 @@ export default function Products() {
                         <p className="text-sm text-gray-500">SKU: {product.sku}</p>
                       </div>
                       <div className="flex gap-1">
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleEditProduct(product)}
+                          title="Edit product"
+                        >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleDeleteProduct(product)}
+                          title="Delete product"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -189,6 +225,22 @@ export default function Products() {
         open={showAddProductModal} 
         onClose={() => setShowAddProductModal(false)} 
       />
+      
+      {selectedProduct && (
+        <EditProductModal 
+          open={showEditProductModal} 
+          onClose={closeEditModal}
+          product={selectedProduct}
+        />
+      )}
+      
+      {selectedProduct && (
+        <DeleteProductDialog 
+          open={showDeleteDialog} 
+          onClose={closeDeleteDialog}
+          product={selectedProduct}
+        />
+      )}
     </>
   );
 }
