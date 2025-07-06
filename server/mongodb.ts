@@ -164,6 +164,7 @@ export class MongoStorage implements IStorage {
       size: insertProduct.size || null,
       fabric: insertProduct.fabric || null,
       imageUrl: insertProduct.imageUrl || null,
+      images: insertProduct.images || null,
       isActive: insertProduct.isActive ?? true,
     };
     await this.products.insertOne(product);
