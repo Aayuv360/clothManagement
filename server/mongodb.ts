@@ -37,16 +37,16 @@ export class MongoStorage implements IStorage {
       console.log('MongoDB client connected successfully');
       this.db = this.client.db('sareeflow');
     
-    // Initialize collections
-    this.users = this.db.collection('users');
-    this.products = this.db.collection('products');
-    this.customers = this.db.collection('customers');
-    this.suppliers = this.db.collection('suppliers');
-    this.orders = this.db.collection('orders');
-    this.orderItems = this.db.collection('orderItems');
-    this.inventoryMovements = this.db.collection('inventoryMovements');
-    this.purchaseOrders = this.db.collection('purchaseOrders');
-    this.purchaseOrderItems = this.db.collection('purchaseOrderItems');
+    // Initialize collections with sm_ prefix
+    this.users = this.db.collection('sm_users');
+    this.products = this.db.collection('sm_products');
+    this.customers = this.db.collection('sm_customers');
+    this.suppliers = this.db.collection('sm_suppliers');
+    this.orders = this.db.collection('sm_orders');
+    this.orderItems = this.db.collection('sm_order_items');
+    this.inventoryMovements = this.db.collection('sm_inventory_movements');
+    this.purchaseOrders = this.db.collection('sm_purchase_orders');
+    this.purchaseOrderItems = this.db.collection('sm_purchase_order_items');
 
     // Create indexes for better performance
     await this.users.createIndex({ username: 1 }, { unique: true });
