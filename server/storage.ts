@@ -61,6 +61,14 @@ export interface IStorage {
     lowStockCount: number;
     totalCustomers: number;
   }>;
+
+  // GridFS Image Upload methods
+  uploadSingleImage?(file: Express.Multer.File): Promise<string>;
+  uploadMultipleImages?(files: Express.Multer.File[]): Promise<string[]>;
+  getImage?(imageId: string): Promise<NodeJS.ReadableStream>;
+  deleteImage?(imageId: string): Promise<boolean>;
+  getImageUrl?(imageId: string): string;
+  getMulterConfig?(): any;
 }
 
 export class MemStorage implements IStorage {

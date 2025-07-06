@@ -1,7 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { upload, uploadImage, uploadMultipleImages } from "./upload";
 import { 
   insertProductSchema, insertCustomerSchema, insertSupplierSchema, insertOrderSchema,
   insertOrderItemSchema, insertInventoryMovementSchema, insertPurchaseOrderSchema,
@@ -11,30 +10,63 @@ import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
-  // File upload routes
-  app.post("/api/upload/single", upload.single('file'), async (req, res) => {
+  // Get multer config from storage
+  const upload = storage.getMulterConfig ? storage.getMulterConfig() : null;
+
+  // GridFS File upload routes
+  app.post("/api/upload/single", upload ? upload.single('file') : (req, res, next) => next(), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
       }
       
-      const imageUrl = await uploadImage(req.file);
+      if (!storage.uploadSingleImage) {
+        return res.status(500).json({ error: "Image upload not supported" });
+      }
+
+      const imageId = await storage.uploadSingleImage(req.file);
+      const imageUrl = storage.getImageUrl ? storage.getImageUrl(imageId) : `/api/images/${imageId}`;
       res.json({ url: imageUrl });
     } catch (error) {
+      console.error("File upload error:", error);
       res.status(500).json({ error: "File upload failed" });
     }
   });
 
-  app.post("/api/upload/multiple", upload.array('files', 5), async (req, res) => {
+  app.post("/api/upload/multiple", upload ? upload.array('files', 5) : (req, res, next) => next(), async (req, res) => {
     try {
       if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
         return res.status(400).json({ error: "No files uploaded" });
       }
       
-      const imageUrls = await uploadMultipleImages(req.files);
+      if (!storage.uploadMultipleImages) {
+        return res.status(500).json({ error: "Image upload not supported" });
+      }
+
+      const imageIds = await storage.uploadMultipleImages(req.files);
+      const imageUrls = imageIds.map(id => storage.getImageUrl ? storage.getImageUrl(id) : `/api/images/${id}`);
       res.json({ urls: imageUrls });
     } catch (error) {
+      console.error("Multiple file upload error:", error);
       res.status(500).json({ error: "File upload failed" });
+    }
+  });
+
+  // Image serving route
+  app.get("/api/images/:imageId", async (req, res) => {
+    try {
+      const { imageId } = req.params;
+      
+      if (!storage.getImage) {
+        return res.status(404).json({ error: "Image not found" });
+      }
+
+      const imageStream = await storage.getImage(imageId);
+      res.setHeader('Content-Type', 'image/jpeg');
+      imageStream.pipe(res);
+    } catch (error) {
+      console.error("Image retrieval error:", error);
+      res.status(404).json({ error: "Image not found" });
     }
   });
   

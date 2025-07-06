@@ -1,16 +1,34 @@
-import { MongoClient, Db, Collection, ObjectId } from 'mongodb';
-import { IStorage } from './storage';
+import { MongoClient, Db, Collection, ObjectId } from "mongodb";
+import { IStorage } from "./storage";
+import { GridFSUploadService } from "./gridfs-upload";
 import {
-  User, InsertUser, Product, InsertProduct, Customer, InsertCustomer,
-  Supplier, InsertSupplier, Order, InsertOrder, OrderItem, InsertOrderItem,
-  InventoryMovement, InsertInventoryMovement, PurchaseOrder, InsertPurchaseOrder,
-  PurchaseOrderItem, InsertPurchaseOrderItem, OrderWithCustomer, OrderWithDetails,
-  ProductWithStock
-} from '@shared/schema';
+  User,
+  InsertUser,
+  Product,
+  InsertProduct,
+  Customer,
+  InsertCustomer,
+  Supplier,
+  InsertSupplier,
+  Order,
+  InsertOrder,
+  OrderItem,
+  InsertOrderItem,
+  InventoryMovement,
+  InsertInventoryMovement,
+  PurchaseOrder,
+  InsertPurchaseOrder,
+  PurchaseOrderItem,
+  InsertPurchaseOrderItem,
+  OrderWithCustomer,
+  OrderWithDetails,
+  ProductWithStock,
+} from "@shared/schema";
 
 export class MongoStorage implements IStorage {
   private client: MongoClient;
   private db!: Db;
+  private gridFSUpload!: GridFSUploadService;
   private users!: Collection;
   private products!: Collection;
   private customers!: Collection;
@@ -27,70 +45,73 @@ export class MongoStorage implements IStorage {
       connectTimeoutMS: 10000,
       tls: true,
       tlsInsecure: false,
-      family: 4 // Force IPv4
+      family: 4, // Force IPv4
     });
   }
 
   async connect() {
     try {
       await this.client.connect();
-      console.log('MongoDB client connected successfully');
-      this.db = this.client.db('sareeflow');
-    
-    // Initialize collections with sm_ prefix
-    this.users = this.db.collection('sm_users');
-    this.products = this.db.collection('sm_products');
-    this.customers = this.db.collection('sm_customers');
-    this.suppliers = this.db.collection('sm_suppliers');
-    this.orders = this.db.collection('sm_orders');
-    this.orderItems = this.db.collection('sm_order_items');
-    this.inventoryMovements = this.db.collection('sm_inventory_movements');
-    this.purchaseOrders = this.db.collection('sm_purchase_orders');
-    this.purchaseOrderItems = this.db.collection('sm_purchase_order_items');
+      console.log("MongoDB client connected successfully");
+      this.db = this.client.db("clothbusiness");
 
-    // Create indexes for better performance
-    await this.users.createIndex({ username: 1 }, { unique: true });
-    await this.products.createIndex({ sku: 1 }, { unique: true });
-    await this.customers.createIndex({ phone: 1 });
-    await this.orders.createIndex({ orderNumber: 1 }, { unique: true });
+      // Initialize GridFS upload service
+      this.gridFSUpload = new GridFSUploadService(this.db);
 
-    // Seed demo users if they don't exist
-    await this.seedDemoUsers();
-    console.log('MongoDB setup completed');
+      // Initialize collections with sm_ prefix
+      this.users = this.db.collection("sm_users");
+      this.products = this.db.collection("sm_products");
+      this.customers = this.db.collection("sm_customers");
+      this.suppliers = this.db.collection("sm_suppliers");
+      this.orders = this.db.collection("sm_orders");
+      this.orderItems = this.db.collection("sm_order_items");
+      this.inventoryMovements = this.db.collection("sm_inventory_movements");
+      this.purchaseOrders = this.db.collection("sm_purchase_orders");
+      this.purchaseOrderItems = this.db.collection("sm_purchase_order_items");
+
+      // Create indexes for better performance
+      await this.users.createIndex({ username: 1 }, { unique: true });
+      await this.products.createIndex({ sku: 1 }, { unique: true });
+      await this.customers.createIndex({ phone: 1 });
+      await this.orders.createIndex({ orderNumber: 1 }, { unique: true });
+
+      // Seed demo users if they don't exist
+      await this.seedDemoUsers();
+      console.log("MongoDB setup completed");
     } catch (error) {
-      console.error('MongoDB connection failed:', error);
+      console.error("MongoDB connection failed:", error);
       throw error;
     }
   }
 
   private async seedDemoUsers() {
-    const existingAdmin = await this.users.findOne({ username: 'admin' });
+    const existingAdmin = await this.users.findOne({ username: "admin" });
     if (!existingAdmin) {
       await this.users.insertMany([
         {
-          username: 'admin',
-          password: 'admin123',
-          email: 'admin@sareeflow.com',
-          fullName: 'Admin User',
-          role: 'admin',
-          createdAt: new Date()
+          username: "admin",
+          password: "admin123",
+          email: "admin@sareeflow.com",
+          fullName: "Admin User",
+          role: "admin",
+          createdAt: new Date(),
         },
         {
-          username: 'staff',
-          password: 'staff123',
-          email: 'staff@sareeflow.com',
-          fullName: 'Sales Staff',
-          role: 'staff',
-          createdAt: new Date()
+          username: "staff",
+          password: "staff123",
+          email: "staff@sareeflow.com",
+          fullName: "Sales Staff",
+          role: "staff",
+          createdAt: new Date(),
         },
         {
-          username: 'warehouse',
-          password: 'warehouse123',
-          email: 'warehouse@sareeflow.com',
-          fullName: 'Warehouse Manager',
-          role: 'warehouse',
-          createdAt: new Date()
-        }
+          username: "warehouse",
+          password: "warehouse123",
+          email: "warehouse@sareeflow.com",
+          fullName: "Warehouse Manager",
+          role: "warehouse",
+          createdAt: new Date(),
+        },
       ]);
     }
   }
@@ -114,7 +135,7 @@ export class MongoStorage implements IStorage {
     const user = {
       ...insertUser,
       id: this.generateId(),
-      createdAt: new Date()
+      createdAt: new Date(),
     };
     await this.users.insertOne(user);
     return this.convertFromMongo(user);
@@ -123,7 +144,7 @@ export class MongoStorage implements IStorage {
   // Product methods
   async getProducts(): Promise<Product[]> {
     const products = await this.products.find({}).toArray();
-    return products.map(p => this.convertFromMongo(p));
+    return products.map((p) => this.convertFromMongo(p));
   }
 
   async getProduct(id: number): Promise<Product | undefined> {
@@ -143,24 +164,27 @@ export class MongoStorage implements IStorage {
       colors: insertProduct.colors || null,
       fabric: insertProduct.fabric || null,
       images: insertProduct.images || null,
-      isActive: insertProduct.isActive ?? true
+      isActive: insertProduct.isActive ?? true,
     };
     await this.products.insertOne(product);
     return this.convertFromMongo(product);
   }
 
-  async updateProduct(id: number, updates: Partial<InsertProduct>): Promise<Product | undefined> {
+  async updateProduct(
+    id: number,
+    updates: Partial<InsertProduct>,
+  ): Promise<Product | undefined> {
     const updatedProduct = {
       ...updates,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
-    
+
     const result = await this.products.findOneAndUpdate(
       { id },
       { $set: updatedProduct },
-      { returnDocument: 'after' }
+      { returnDocument: "after" },
     );
-    
+
     return result ? this.convertFromMongo(result) : undefined;
   }
 
@@ -172,21 +196,26 @@ export class MongoStorage implements IStorage {
   async getLowStockProducts(): Promise<ProductWithStock[]> {
     const products = await this.products.find({}).toArray();
     return products
-      .map(p => this.convertFromMongo(p))
-      .filter(p => p.stockQuantity <= p.minStockLevel)
-      .map(p => ({
+      .map((p) => this.convertFromMongo(p))
+      .filter((p) => p.stockQuantity <= p.minStockLevel)
+      .map((p) => ({
         ...p,
         isLowStock: p.stockQuantity <= p.minStockLevel,
-        stockStatus: p.stockQuantity === 0 ? 'critical' as const :
-                    p.stockQuantity <= p.minStockLevel * 0.5 ? 'critical' as const :
-                    p.stockQuantity <= p.minStockLevel ? 'low' as const : 'good' as const
+        stockStatus:
+          p.stockQuantity === 0
+            ? ("critical" as const)
+            : p.stockQuantity <= p.minStockLevel * 0.5
+              ? ("critical" as const)
+              : p.stockQuantity <= p.minStockLevel
+                ? ("low" as const)
+                : ("good" as const),
       }));
   }
 
   // Customer methods
   async getCustomers(): Promise<Customer[]> {
     const customers = await this.customers.find({}).toArray();
-    return customers.map(c => this.convertFromMongo(c));
+    return customers.map((c) => this.convertFromMongo(c));
   }
 
   async getCustomer(id: number): Promise<Customer | undefined> {
@@ -208,17 +237,20 @@ export class MongoStorage implements IStorage {
       pincode: insertCustomer.pincode || null,
       gstNumber: insertCustomer.gstNumber || null,
       preferences: insertCustomer.preferences || null,
-      notes: insertCustomer.notes || null
+      notes: insertCustomer.notes || null,
     };
     await this.customers.insertOne(customer);
     return this.convertFromMongo(customer);
   }
 
-  async updateCustomer(id: number, updates: Partial<InsertCustomer>): Promise<Customer | undefined> {
+  async updateCustomer(
+    id: number,
+    updates: Partial<InsertCustomer>,
+  ): Promise<Customer | undefined> {
     const result = await this.customers.findOneAndUpdate(
       { id },
       { $set: updates },
-      { returnDocument: 'after' }
+      { returnDocument: "after" },
     );
     return result ? this.convertFromMongo(result) : undefined;
   }
@@ -231,7 +263,7 @@ export class MongoStorage implements IStorage {
   // Supplier methods
   async getSuppliers(): Promise<Supplier[]> {
     const suppliers = await this.suppliers.find({}).toArray();
-    return suppliers.map(s => this.convertFromMongo(s));
+    return suppliers.map((s) => this.convertFromMongo(s));
   }
 
   async getSupplier(id: number): Promise<Supplier | undefined> {
@@ -254,17 +286,20 @@ export class MongoStorage implements IStorage {
       bankDetails: insertSupplier.bankDetails || null,
       paymentTerms: insertSupplier.paymentTerms || null,
       notes: insertSupplier.notes || null,
-      isActive: insertSupplier.isActive ?? true
+      isActive: insertSupplier.isActive ?? true,
     };
     await this.suppliers.insertOne(supplier);
     return this.convertFromMongo(supplier);
   }
 
-  async updateSupplier(id: number, updates: Partial<InsertSupplier>): Promise<Supplier | undefined> {
+  async updateSupplier(
+    id: number,
+    updates: Partial<InsertSupplier>,
+  ): Promise<Supplier | undefined> {
     const result = await this.suppliers.findOneAndUpdate(
       { id },
       { $set: updates },
-      { returnDocument: 'after' }
+      { returnDocument: "after" },
     );
     return result ? this.convertFromMongo(result) : undefined;
   }
@@ -278,17 +313,17 @@ export class MongoStorage implements IStorage {
   async getOrders(): Promise<OrderWithCustomer[]> {
     const orders = await this.orders.find({}).toArray();
     const result = [];
-    
+
     for (const order of orders) {
       const customer = await this.customers.findOne({ id: order.customerId });
       if (customer) {
         result.push({
           ...this.convertFromMongo(order),
-          customer: this.convertFromMongo(customer)
+          customer: this.convertFromMongo(customer),
         });
       }
     }
-    
+
     return result;
   }
 
@@ -298,14 +333,14 @@ export class MongoStorage implements IStorage {
 
     const customer = await this.customers.findOne({ id: order.customerId });
     const items = await this.orderItems.find({ orderId: id }).toArray();
-    
+
     const itemsWithProducts = [];
     for (const item of items) {
       const product = await this.products.findOne({ id: item.productId });
       if (product) {
         itemsWithProducts.push({
           ...this.convertFromMongo(item),
-          product: this.convertFromMongo(product)
+          product: this.convertFromMongo(product),
         });
       }
     }
@@ -315,18 +350,21 @@ export class MongoStorage implements IStorage {
     return {
       ...this.convertFromMongo(order),
       customer: this.convertFromMongo(customer),
-      items: itemsWithProducts
+      items: itemsWithProducts,
     };
   }
 
-  async createOrder(insertOrder: InsertOrder, items: InsertOrderItem[]): Promise<OrderWithDetails> {
+  async createOrder(
+    insertOrder: InsertOrder,
+    items: InsertOrderItem[],
+  ): Promise<OrderWithDetails> {
     const orderId = this.generateId();
-    
+
     const order = {
       ...insertOrder,
       id: orderId,
-      status: insertOrder.status || 'pending',
-      paymentStatus: insertOrder.paymentStatus || 'pending',
+      status: insertOrder.status || "pending",
+      paymentStatus: insertOrder.paymentStatus || "pending",
       discount: insertOrder.discount || null,
       tax: insertOrder.tax || null,
       shippingAddress: insertOrder.shippingAddress || null,
@@ -335,39 +373,42 @@ export class MongoStorage implements IStorage {
       orderDate: insertOrder.orderDate || new Date(),
       deliveryDate: insertOrder.deliveryDate || null,
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     await this.orders.insertOne(order);
 
-    const orderItems = items.map(item => ({
+    const orderItems = items.map((item) => ({
       ...item,
       id: this.generateId(),
-      orderId
+      orderId,
     }));
 
     await this.orderItems.insertMany(orderItems);
 
     // Update product stock
     for (const item of items) {
-      await this.updateProductStock(item.productId, item.quantity, 'subtract');
+      await this.updateProductStock(item.productId, item.quantity, "subtract");
     }
 
-    return await this.getOrder(orderId) as OrderWithDetails;
+    return (await this.getOrder(orderId)) as OrderWithDetails;
   }
 
-  async updateOrder(id: number, updates: Partial<InsertOrder>): Promise<Order | undefined> {
+  async updateOrder(
+    id: number,
+    updates: Partial<InsertOrder>,
+  ): Promise<Order | undefined> {
     const updatedOrder = {
       ...updates,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
-    
+
     const result = await this.orders.findOneAndUpdate(
       { id },
       { $set: updatedOrder },
-      { returnDocument: 'after' }
+      { returnDocument: "after" },
     );
-    
+
     return result ? this.convertFromMongo(result) : undefined;
   }
 
@@ -378,69 +419,82 @@ export class MongoStorage implements IStorage {
   }
 
   async getRecentOrders(limit: number): Promise<OrderWithCustomer[]> {
-    const orders = await this.orders.find({})
+    const orders = await this.orders
+      .find({})
       .sort({ createdAt: -1 })
       .limit(limit)
       .toArray();
-    
+
     const result = [];
     for (const order of orders) {
       const customer = await this.customers.findOne({ id: order.customerId });
       if (customer) {
         result.push({
           ...this.convertFromMongo(order),
-          customer: this.convertFromMongo(customer)
+          customer: this.convertFromMongo(customer),
         });
       }
     }
-    
+
     return result;
   }
 
   // Inventory methods
   async getInventoryMovements(): Promise<InventoryMovement[]> {
     const movements = await this.inventoryMovements.find({}).toArray();
-    return movements.map(m => this.convertFromMongo(m));
+    return movements.map((m) => this.convertFromMongo(m));
   }
 
-  async createInventoryMovement(insertMovement: InsertInventoryMovement): Promise<InventoryMovement> {
+  async createInventoryMovement(
+    insertMovement: InsertInventoryMovement,
+  ): Promise<InventoryMovement> {
     const movement = {
       ...insertMovement,
       id: this.generateId(),
       notes: insertMovement.notes || null,
       reference: insertMovement.reference || null,
-      createdAt: new Date()
+      createdAt: new Date(),
     };
     await this.inventoryMovements.insertOne(movement);
     return this.convertFromMongo(movement);
   }
 
-  async updateProductStock(productId: number, quantity: number, type: 'add' | 'subtract'): Promise<void> {
+  async updateProductStock(
+    productId: number,
+    quantity: number,
+    type: "add" | "subtract",
+  ): Promise<void> {
     const product = await this.products.findOne({ id: productId });
     if (!product) return;
 
-    const newQuantity = type === 'add' 
-      ? product.stockQuantity + quantity 
-      : product.stockQuantity - quantity;
+    const newQuantity =
+      type === "add"
+        ? product.stockQuantity + quantity
+        : product.stockQuantity - quantity;
 
     await this.products.updateOne(
       { id: productId },
-      { $set: { stockQuantity: Math.max(0, newQuantity), updatedAt: new Date() } }
+      {
+        $set: {
+          stockQuantity: Math.max(0, newQuantity),
+          updatedAt: new Date(),
+        },
+      },
     );
 
     // Create inventory movement record
     await this.createInventoryMovement({
       productId,
-      type: type === 'add' ? 'stock_in' : 'stock_out',
-      quantity: type === 'add' ? quantity : -quantity,
-      notes: `Stock ${type === 'add' ? 'added' : 'removed'} via system`
+      type: type === "add" ? "stock_in" : "stock_out",
+      quantity: type === "add" ? quantity : -quantity,
+      notes: `Stock ${type === "add" ? "added" : "removed"} via system`,
     });
   }
 
   // Purchase Order methods
   async getPurchaseOrders(): Promise<PurchaseOrder[]> {
     const pos = await this.purchaseOrders.find({}).toArray();
-    return pos.map(po => this.convertFromMongo(po));
+    return pos.map((po) => this.convertFromMongo(po));
   }
 
   async getPurchaseOrder(id: number): Promise<PurchaseOrder | undefined> {
@@ -448,45 +502,51 @@ export class MongoStorage implements IStorage {
     return po ? this.convertFromMongo(po) : undefined;
   }
 
-  async createPurchaseOrder(insertPO: InsertPurchaseOrder, items: InsertPurchaseOrderItem[]): Promise<PurchaseOrder> {
+  async createPurchaseOrder(
+    insertPO: InsertPurchaseOrder,
+    items: InsertPurchaseOrderItem[],
+  ): Promise<PurchaseOrder> {
     const poId = this.generateId();
-    
+
     const po = {
       ...insertPO,
       id: poId,
-      status: insertPO.status || 'pending',
+      status: insertPO.status || "pending",
       tax: insertPO.tax || null,
       notes: insertPO.notes || null,
       expectedDate: insertPO.expectedDate || null,
       receivedDate: insertPO.receivedDate || null,
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     await this.purchaseOrders.insertOne(po);
 
-    const poItems = items.map(item => ({
+    const poItems = items.map((item) => ({
       ...item,
       id: this.generateId(),
-      purchaseOrderId: poId
+      purchaseOrderId: poId,
     }));
 
     await this.purchaseOrderItems.insertMany(poItems);
     return this.convertFromMongo(po);
   }
 
-  async updatePurchaseOrder(id: number, updates: Partial<InsertPurchaseOrder>): Promise<PurchaseOrder | undefined> {
+  async updatePurchaseOrder(
+    id: number,
+    updates: Partial<InsertPurchaseOrder>,
+  ): Promise<PurchaseOrder | undefined> {
     const updatedPO = {
       ...updates,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
-    
+
     const result = await this.purchaseOrders.findOneAndUpdate(
       { id },
       { $set: updatedPO },
-      { returnDocument: 'after' }
+      { returnDocument: "after" },
     );
-    
+
     return result ? this.convertFromMongo(result) : undefined;
   }
 
@@ -499,26 +559,54 @@ export class MongoStorage implements IStorage {
   }> {
     const totalOrders = await this.orders.countDocuments();
     const totalCustomers = await this.customers.countDocuments();
-    
+
     const orders = await this.orders.find({}).toArray();
-    const revenue = orders.reduce((sum, order) => sum + parseFloat(order.total || '0'), 0);
-    
+    const revenue = orders.reduce(
+      (sum, order) => sum + parseFloat(order.total || "0"),
+      0,
+    );
+
     const lowStockProducts = await this.getLowStockProducts();
-    
+
     return {
       totalOrders,
       revenue,
       lowStockCount: lowStockProducts.length,
-      totalCustomers
+      totalCustomers,
     };
   }
 
   private convertFromMongo(doc: any): any {
     if (!doc) return doc;
-    
+
     // Remove MongoDB's _id field and return the document
     const { _id, ...result } = doc;
     return result;
+  }
+
+  // GridFS upload methods
+  async uploadSingleImage(file: Express.Multer.File): Promise<string> {
+    return this.gridFSUpload.uploadSingleImage(file);
+  }
+
+  async uploadMultipleImages(files: Express.Multer.File[]): Promise<string[]> {
+    return this.gridFSUpload.uploadMultipleImages(files);
+  }
+
+  async getImage(imageId: string): Promise<NodeJS.ReadableStream> {
+    return this.gridFSUpload.getImage(imageId);
+  }
+
+  async deleteImage(imageId: string): Promise<boolean> {
+    return this.gridFSUpload.deleteImage(imageId);
+  }
+
+  getImageUrl(imageId: string): string {
+    return this.gridFSUpload.getImageUrl(imageId);
+  }
+
+  getMulterConfig() {
+    return this.gridFSUpload.getMulterConfig();
   }
 
   async disconnect() {
