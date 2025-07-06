@@ -158,12 +158,12 @@ export class MongoStorage implements IStorage {
       id: this.generateId(),
       createdAt: new Date(),
       updatedAt: new Date(),
-      sizes: insertProduct.sizes || null,
       description: insertProduct.description || null,
       costPrice: insertProduct.costPrice || null,
-      colors: insertProduct.colors || null,
+      color: insertProduct.color || null,
+      size: insertProduct.size || null,
       fabric: insertProduct.fabric || null,
-      images: insertProduct.images || null,
+      imageUrl: insertProduct.imageUrl || null,
       isActive: insertProduct.isActive ?? true,
     };
     await this.products.insertOne(product);

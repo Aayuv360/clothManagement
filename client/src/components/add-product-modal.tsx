@@ -47,10 +47,9 @@ export default function AddProductModal({ open, onClose }: AddProductModalProps)
       stockQuantity: "",
       minStockLevel: "5",
       fabric: "",
-      colors: [],
-      sizes: [],
-      isActive: true,
-      images: []
+      color: "",
+      size: "",
+      isActive: true
     }
   });
 
@@ -62,9 +61,7 @@ export default function AddProductModal({ open, onClose }: AddProductModalProps)
         costPrice: data.costPrice || "0",
         stockQuantity: parseInt(data.stockQuantity),
         minStockLevel: parseInt(data.minStockLevel),
-        images: images,
-        colors: data.colors || [],
-        sizes: data.sizes || []
+        imageUrl: images.length > 0 ? images[0] : null,
       };
       
       return await apiRequest("POST", "/api/products", productData);

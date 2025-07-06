@@ -34,7 +34,7 @@ interface EditProductModalProps {
 export default function EditProductModal({ open, onClose, product }: EditProductModalProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [images, setImages] = useState<string[]>(product.images || []);
+  const [images, setImages] = useState<string[]>(product.imageUrl ? [product.imageUrl] : []);
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
@@ -48,8 +48,8 @@ export default function EditProductModal({ open, onClose, product }: EditProduct
       stockQuantity: product.stockQuantity.toString(),
       minStockLevel: product.minStockLevel.toString(),
       fabric: product.fabric || "",
-      colors: product.colors || [],
-      sizes: product.sizes || [],
+      color: product.color || "",
+      size: product.size || "",
       isActive: product.isActive ?? true,
     },
   });
@@ -67,11 +67,11 @@ export default function EditProductModal({ open, onClose, product }: EditProduct
         stockQuantity: product.stockQuantity.toString(),
         minStockLevel: product.minStockLevel.toString(),
         fabric: product.fabric || "",
-        colors: product.colors || [],
-        sizes: product.sizes || [],
+        color: product.color || "",
+        size: product.size || "",
         isActive: product.isActive ?? true,
       });
-      setImages(product.images || []);
+      setImages(product.imageUrl ? [product.imageUrl] : []);
     }
   }, [product, form]);
 
@@ -83,9 +83,7 @@ export default function EditProductModal({ open, onClose, product }: EditProduct
         costPrice: data.costPrice || "0",
         stockQuantity: parseInt(data.stockQuantity),
         minStockLevel: parseInt(data.minStockLevel),
-        images: images,
-        colors: data.colors || [],
-        sizes: data.sizes || []
+        imageUrl: images.length > 0 ? images[0] : null,
       };
       
       return await apiRequest("PUT", `/api/products/${product.id}`, productData);
