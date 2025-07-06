@@ -36,6 +36,7 @@ export interface Product {
   size: string | null;
   fabric: string | null;
   imageUrl: string | null;
+  images: string[] | null;
   isActive: boolean | null;
   createdAt: Date | null;
   updatedAt: Date | null;
@@ -54,6 +55,7 @@ export const insertProductSchema = z.object({
   size: z.string().optional(),
   fabric: z.string().optional(),
   imageUrl: z.string().optional(),
+  images: z.array(z.string()).optional(),
   isActive: z.boolean().default(true),
 });
 

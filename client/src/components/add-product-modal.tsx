@@ -62,6 +62,7 @@ export default function AddProductModal({ open, onClose }: AddProductModalProps)
         stockQuantity: parseInt(data.stockQuantity),
         minStockLevel: parseInt(data.minStockLevel),
         imageUrl: images.length > 0 ? images[0] : null,
+        images: images.length > 0 ? images : null,
       };
       
       return await apiRequest("POST", "/api/products", productData);

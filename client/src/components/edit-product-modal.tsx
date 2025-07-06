@@ -71,7 +71,13 @@ export default function EditProductModal({ open, onClose, product }: EditProduct
         size: product.size || "",
         isActive: product.isActive ?? true,
       });
-      setImages(product.imageUrl ? [product.imageUrl] : []);
+      // Initialize images from either images array or single imageUrl
+      const initialImages = product.images && product.images.length > 0 
+        ? product.images 
+        : product.imageUrl 
+        ? [product.imageUrl] 
+        : [];
+      setImages(initialImages);
     }
   }, [product, form]);
 
@@ -84,6 +90,7 @@ export default function EditProductModal({ open, onClose, product }: EditProduct
         stockQuantity: parseInt(data.stockQuantity),
         minStockLevel: parseInt(data.minStockLevel),
         imageUrl: images.length > 0 ? images[0] : null,
+        images: images.length > 0 ? images : null,
       };
       
       return await apiRequest("PUT", `/api/products/${product.id}`, productData);
