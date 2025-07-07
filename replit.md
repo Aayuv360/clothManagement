@@ -157,3 +157,6 @@ Recent Changes:
 - July 06, 2025: Enhanced product schema to support both single imageUrl and multiple images array
 - July 06, 2025: Fixed schema mapping issues between frontend components and MongoDB backend
 - July 06, 2025: Implemented proper multiple image upload with GridFS storage and URL mapping
+- July 07, 2025: Added new product fields to sm_products collection: length, blouseLength, brand, occasions
+- July 07, 2025: Updated add/edit product modals with new form fields for saree business requirements
+- July 07, 2025: Enhanced MongoDB storage layer to support all new product attributes

@@ -48,6 +48,10 @@ export default function EditProductModal({ open, onClose, product }: EditProduct
       stockQuantity: product.stockQuantity.toString(),
       minStockLevel: product.minStockLevel.toString(),
       fabric: product.fabric || "",
+      length: product.length || "",
+      blouseLength: product.blouseLength || "",
+      brand: product.brand || "",
+      occasions: product.occasions || "",
       color: product.color || "",
       size: product.size || "",
       isActive: product.isActive ?? true,
@@ -67,6 +71,10 @@ export default function EditProductModal({ open, onClose, product }: EditProduct
         stockQuantity: product.stockQuantity.toString(),
         minStockLevel: product.minStockLevel.toString(),
         fabric: product.fabric || "",
+        length: product.length || "",
+        blouseLength: product.blouseLength || "",
+        brand: product.brand || "",
+        occasions: product.occasions || "",
         color: product.color || "",
         size: product.size || "",
         isActive: product.isActive ?? true,
@@ -196,6 +204,66 @@ export default function EditProductModal({ open, onClose, product }: EditProduct
                     <FormLabel>Fabric</FormLabel>
                     <FormControl>
                       <Input placeholder="Enter fabric type" {...field} value={field.value || ""} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="brand"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Brand</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter brand name" {...field} value={field.value || ""} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="length"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Length</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter length" {...field} value={field.value || ""} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="blouseLength"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Blouse Length</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter blouse length" {...field} value={field.value || ""} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="occasions"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Occasions</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter occasions" {...field} value={field.value || ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

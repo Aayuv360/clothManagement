@@ -47,6 +47,10 @@ export default function AddProductModal({ open, onClose }: AddProductModalProps)
       stockQuantity: "",
       minStockLevel: "5",
       fabric: "",
+      length: "",
+      blouseLength: "",
+      brand: "",
+      occasions: "",
       color: "",
       size: "",
       isActive: true
@@ -168,6 +172,62 @@ export default function AddProductModal({ open, onClose }: AddProductModalProps)
                     <FormLabel>Fabric</FormLabel>
                     <FormControl>
                       <Input placeholder="e.g., Silk, Cotton, Georgette" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="brand"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Brand</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., Sabyasachi, Manish Malhotra" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="length"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Length</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., 5.5 meters" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="blouseLength"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Blouse Length</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., 0.8 meters" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="occasions"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Occasions</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., Wedding, Party, Festival" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

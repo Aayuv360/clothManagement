@@ -35,6 +35,10 @@ export interface Product {
   color: string | null;
   size: string | null;
   fabric: string | null;
+  length: string | null;
+  blouseLength: string | null;
+  brand: string | null;
+  occasions: string | null;
   imageUrl: string | null;
   images: string[] | null;
   isActive: boolean | null;
@@ -54,6 +58,10 @@ export const insertProductSchema = z.object({
   color: z.string().optional(),
   size: z.string().optional(),
   fabric: z.string().optional(),
+  length: z.string().optional(),
+  blouseLength: z.string().optional(),
+  brand: z.string().optional(),
+  occasions: z.string().optional(),
   imageUrl: z.string().optional(),
   images: z.array(z.string()).optional(),
   isActive: z.boolean().default(true),
