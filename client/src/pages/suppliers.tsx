@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Search, Filter, Edit, Trash2, Truck, Phone, Mail, MapPin } from "lucide-react";
+import EditSupplierModal from "@/components/edit-supplier-modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +21,8 @@ type SupplierFormValues = z.infer<typeof insertSupplierSchema>;
 
 export default function Suppliers() {
   const [showAddSupplierModal, setShowAddSupplierModal] = useState(false);
+  const [showEditSupplierModal, setShowEditSupplierModal] = useState(false);
+  const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -91,8 +94,39 @@ export default function Suppliers() {
     return colors[name.length % colors.length];
   };
 
+  const deleteSupplierMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return await apiRequest("DELETE", `/api/suppliers/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/suppliers"] });
+      toast({
+        title: "Success",
+        description: "Supplier deleted successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete supplier",
+        variant: "destructive",
+      });
+    }
+  });
+
   const handleSubmit = (data: SupplierFormValues) => {
     createSupplierMutation.mutate(data);
+  };
+
+  const handleEditSupplier = (supplier: Supplier) => {
+    setSelectedSupplier(supplier);
+    setShowEditSupplierModal(true);
+  };
+
+  const handleDeleteSupplier = (supplier: Supplier) => {
+    if (window.confirm(`Are you sure you want to delete supplier "${supplier.name}"?`)) {
+      deleteSupplierMutation.mutate(supplier.id);
+    }
   };
 
   if (isLoading) {
@@ -210,10 +244,19 @@ export default function Suppliers() {
                       </div>
                     </div>
                     <div className="flex gap-1">
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => handleEditSupplier(supplier)}
+                      >
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => handleDeleteSupplier(supplier)}
+                        disabled={deleteSupplierMutation.isPending}
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -491,6 +534,16 @@ export default function Suppliers() {
           </Form>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Supplier Modal */}
+      <EditSupplierModal 
+        open={showEditSupplierModal} 
+        onClose={() => {
+          setShowEditSupplierModal(false);
+          setSelectedSupplier(null);
+        }}
+        supplier={selectedSupplier}
+      />
     </>
   );
 }

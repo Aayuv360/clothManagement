@@ -373,6 +373,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/orders/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = insertOrderSchema.partial().parse(req.body);
+      const order = await storage.updateOrder(id, updates);
+      if (!order) {
+        return res.status(404).json({ error: "Order not found" });
+      }
+      res.json(order);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid order data", details: error.errors });
+      }
+      res.status(500).json({ error: "Failed to update order" });
+    }
+  });
+
   // Suppliers routes
   app.get("/api/suppliers", async (req, res) => {
     try {

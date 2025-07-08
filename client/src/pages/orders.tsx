@@ -9,11 +9,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AddOrderModal from "@/components/add-order-modal";
+import OrderDetailsModal from "@/components/order-details-modal";
 import { OrderWithCustomer } from "@shared/schema";
 import { formatDistanceToNow } from "date-fns";
 
 export default function Orders() {
   const [showAddOrderModal, setShowAddOrderModal] = useState(false);
+  const [showOrderDetailsModal, setShowOrderDetailsModal] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
@@ -262,11 +265,27 @@ export default function Orders() {
                         )}
 
                         <div className="flex justify-end space-x-2">
-                          <Button variant="outline" size="sm" className="flex items-center gap-1">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex items-center gap-1"
+                            onClick={() => {
+                              setSelectedOrderId(order.id);
+                              setShowOrderDetailsModal(true);
+                            }}
+                          >
                             <Eye className="h-4 w-4" />
                             View Details
                           </Button>
-                          <Button variant="outline" size="sm" className="flex items-center gap-1">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex items-center gap-1"
+                            onClick={() => {
+                              setSelectedOrderId(order.id);
+                              setShowOrderDetailsModal(true);
+                            }}
+                          >
                             <Edit className="h-4 w-4" />
                             Edit
                           </Button>
@@ -300,6 +319,15 @@ export default function Orders() {
       <AddOrderModal 
         open={showAddOrderModal} 
         onClose={() => setShowAddOrderModal(false)} 
+      />
+      
+      <OrderDetailsModal 
+        open={showOrderDetailsModal} 
+        onClose={() => {
+          setShowOrderDetailsModal(false);
+          setSelectedOrderId(null);
+        }}
+        orderId={selectedOrderId}
       />
     </>
   );
